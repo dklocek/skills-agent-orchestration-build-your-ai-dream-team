@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A clear, contributor-friendly view of project progress, ownership, and risk.">
+    <title>Project Pulse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="project-data.json" as="fetch" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard" data-project-source="project-data.json">
+      <header class="dashboard-header">
+        <div class="brand-lockup" aria-label="Project Pulse home">
+          <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span>Project Pulse</span>
+        </div>
+        <div class="header-date">
+          <span class="eyebrow">Team workspace</span>
+          <span class="date-value">Project overview</span>
+        </div>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow accent-label">Mona's contributors</p>
+          <h1 id="page-title">Stay close to the work.</h1>
+          <p class="hero-description">A focused view of what is moving, who is leading it, and where the team may need a hand.</p>
+        </div>
+        <div class="pulse-orbit" aria-hidden="true">
+          <span class="orbit-ring orbit-ring-one"></span>
+          <span class="orbit-ring orbit-ring-two"></span>
+          <span class="orbit-core"></span>
+        </div>
+      </section>
+
+      <section class="overview-strip" aria-label="Project overview">
+        <div class="overview-item">
+          <span class="overview-icon icon-projects" aria-hidden="true">✦</span>
+          <span class="overview-content"><span class="overview-label">Projects tracked</span><strong data-stat="total">--</strong></span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-icon icon-active" aria-hidden="true">↗</span>
+          <span class="overview-content"><span class="overview-label">Currently active</span><strong data-stat="active">--</strong></span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-icon icon-attention" aria-hidden="true">!</span>
+          <span class="overview-content"><span class="overview-label">Needs attention</span><strong data-stat="attention">--</strong></span>
+        </div>
+      </section>
+
+      <section class="projects-section" aria-labelledby="projects-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">The big picture</p>
+            <h2 id="projects-heading">Project pulse</h2>
+          </div>
+          <p class="section-hint">Scan status, activity, and priority at a glance.</p>
+        </div>
+
+        <div class="project-grid" id="project-list" aria-live="polite" data-project-list>
+          <article class="project-card project-card--placeholder" aria-label="Projects are loading">
+            <div class="placeholder-line placeholder-title"></div>
+            <div class="placeholder-line placeholder-short"></div>
+            <div class="placeholder-body"></div>
+            <div class="placeholder-footer"></div>
+          </article>
+        </div>
+
+        <p class="empty-state" data-empty-state hidden>No projects to show yet. Your next project will appear here.</p>
+        <p class="error-state" data-error-state hidden>Projects could not be loaded. Please refresh and try again.</p>
+      </section>
+    </main>
+
+    <template id="project-card-template">
+      <article class="project-card">
+        <div class="card-topline">
+          <span class="status-badge" data-field="status"></span>
+          <span class="priority-badge" data-field="priority"></span>
+        </div>
+        <h3 class="project-name" data-field="name"></h3>
+        <p class="project-owner"><span class="owner-avatar" aria-hidden="true" data-field="ownerInitials"></span><span>Owned by <strong data-field="owner"></strong></span></p>
+        <div class="activity-block">
+          <span class="field-label">Recent activity</span>
+          <p data-field="recentActivity"></p>
+        </div>
+      </article>
+    </template>
+
+    <script>
+      const projectList = document.querySelector("[data-project-list]");
+      const cardTemplate = document.querySelector("#project-card-template");
+      const emptyState = document.querySelector("[data-empty-state]");
+      const errorState = document.querySelector("[data-error-state]");
+      const totalStat = document.querySelector('[data-stat="total"]');
+      const activeStat = document.querySelector('[data-stat="active"]');
+      const attentionStat = document.querySelector('[data-stat="attention"]');
+
+      const getInitials = (owner) => owner
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+
+      const renderProjects = (projects) => {
+        projectList.replaceChildren();
+        totalStat.textContent = projects.length;
+        activeStat.textContent = projects.filter((project) => /active|progress/i.test(project.status)).length;
+        attentionStat.textContent = projects.filter((project) => /high|critical|urgent/i.test(project.priority)).length;
+
+        if (projects.length === 0) {
+          emptyState.hidden = false;
+          return;
+        }
+
+        emptyState.hidden = true;
+        projects.forEach((project) => {
+          const card = cardTemplate.content.cloneNode(true);
+          card.querySelector('[data-field="status"]').textContent = project.status;
+          card.querySelector('[data-field="priority"]').textContent = `Priority: ${project.priority}`;
+          card.querySelector('[data-field="name"]').textContent = project.name;
+          card.querySelector('[data-field="owner"]').textContent = project.owner;
+          card.querySelector('[data-field="ownerInitials"]').textContent = getInitials(project.owner);
+          card.querySelector('[data-field="recentActivity"]').textContent = project.recentActivity;
+          projectList.append(card);
+        });
+      };
+
+      fetch("project-data.json")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Project data request failed: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (!data || !Array.isArray(data.projects)) {
+            throw new Error("Project data must contain a projects array");
+          }
+          renderProjects(data.projects);
+        })
+        .catch((error) => {
+          console.error(error);
+          projectList.replaceChildren();
+          errorState.hidden = false;
+        });
+    </script>
+  </body>
+</html>

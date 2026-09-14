@@ -1,0 +1,39 @@
+{
+  "projects": [
+    {
+      "name": "Contributor onboarding",
+      "owner": "Mona Patel",
+      "status": "Active",
+      "recentActivity": "Drafted the welcome flow and scheduled the first contributor review.",
+      "priority": "High"
+    },
+    {
+      "name": "Release readiness",
+      "owner": "Jordan Lee",
+      "status": "In progress",
+      "recentActivity": "Closed three launch blockers and is tracking the final QA pass.",
+      "priority": "High"
+    },
+    {
+      "name": "Insights dashboard",
+      "owner": "Alex Rivera",
+      "status": "Planning",
+      "recentActivity": "Collected feedback from five teams to shape the first reporting view.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Design system refresh",
+      "owner": "Sam Okafor",
+      "status": "Active",
+      "recentActivity": "Published updated button guidance and is testing color tokens.",
+      "priority": "Low"
+    },
+    {
+      "name": "Support workflow",
+      "owner": "Priya Shah",
+      "status": "At risk",
+      "recentActivity": "Waiting on the automation handoff before the next pilot can begin.",
+      "priority": "Critical"
+    }
+  ]
+}
